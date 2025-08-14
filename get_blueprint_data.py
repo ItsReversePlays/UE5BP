@@ -45,32 +45,45 @@ def get_blueprint_callable_functions():
     """
     unreal.log("Starting scan for Blueprint-callable functions...")
 
-    # Third attempt. The user's environment is missing core API functions.
-    # This approach iterates through the top-level 'unreal' module to find
-    # any exposed UClass objects. It might not be complete, but it's very robust.
-    unreal.log("Attempting to find classes by scanning the 'unreal' module...")
+    # Final attempt. Since class discovery is failing, we try to find a hardcoded
+    # list of common Blueprint Function Libraries by name.
+    unreal.log("Attempting to find a hardcoded list of common libraries...")
+
+    known_library_names = [
+        "KismetMathLibrary",
+        "KismetSystemLibrary",
+        "KismetStringLibrary",
+        "KismetArrayLibrary",
+        "KismetGameplayStatics",
+        "BlueprintPathsLibrary",
+        "EditorLevelLibrary",
+        "EditorStaticMeshLibrary",
+        "GameplayStatics",
+        "PlatformCrypto",
+        "AutomationController",
+    ]
+
     all_classes = []
-    for name in dir(unreal):
+    for name in known_library_names:
         try:
-            obj = getattr(unreal, name)
-            if isinstance(obj, unreal.Class):
-                all_classes.append(obj)
-        except Exception:
-            # Some attributes might raise exceptions when accessed.
+            cls = unreal.find_class(name)
+            if cls:
+                unreal.log(f"[DEBUG] Successfully found class: {name}")
+                all_classes.append(cls)
+            else:
+                unreal.log(f"[DEBUG] Could not find class by name: {name}")
+        except Exception as e:
+            unreal.log(f"[DEBUG] Error while trying to find class {name}: {e}")
             continue
 
-    unreal.log(f"[DEBUG] Found {len(all_classes)} potential classes in the 'unreal' module.")
-    if len(all_classes) == 0:
-        unreal.log("[DEBUG] No classes were found. This is likely the reason for the empty output. The script cannot proceed.")
+    if not all_classes:
+        unreal.log("[CRITICAL] Failed to find any of the known libraries. 'unreal.find_class' may not be working.")
         return
 
     total_functions_printed = 0
     for cls in all_classes:
-        unreal.log(f"[DEBUG] Processing class: {cls.get_name()}")
-
         # We only care about classes that can have callable functions.
         if not cls.has_any_class_flags(unreal.ClassFlags.FUNCTION):
-            unreal.log(f"[DEBUG]  -> Skipping {cls.get_name()} because it has no FUNCTION flag.")
             continue
 
         # Filter out classes that are not relevant to typical Blueprint usage
