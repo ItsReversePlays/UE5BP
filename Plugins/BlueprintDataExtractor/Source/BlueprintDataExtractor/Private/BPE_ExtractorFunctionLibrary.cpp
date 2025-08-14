@@ -98,16 +98,16 @@ bool UBPE_ExtractorFunctionLibrary::ExportBlueprintFunctionData(FString FilePath
                     ParamObject->SetStringField(TEXT("Type"), GetPropertyType(Property));
                     ParamObject->SetStringField(TEXT("Direction"), Direction);
 
-                    ParamsArray->Array.Add(MakeShareable(new FJsonValueObject(ParamObject)));
+                    ParamsArray->Add(MakeShareable(new FJsonValueObject(ParamObject)));
                 }
 
-                FunctionObject->SetArrayField(TEXT("Parameters"), ParamsArray->Array);
-                AllFunctionsArray->Array.Add(MakeShareable(new FJsonValueObject(FunctionObject)));
+                FunctionObject->SetArrayField(TEXT("Parameters"), *ParamsArray);
+                AllFunctionsArray->Add(MakeShareable(new FJsonValueObject(FunctionObject)));
             }
         }
     }
 
-    RootObject->SetArrayField(TEXT("BlueprintCallableFunctions"), AllFunctionsArray->Array);
+    RootObject->SetArrayField(TEXT("BlueprintCallableFunctions"), *AllFunctionsArray);
 
     FString OutputString;
     TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
