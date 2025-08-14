@@ -1,12 +1,18 @@
 #include "BPE_ExtractorFunctionLibrary.h"
+
+// Explicitly include the main module headers as a fallback for non-standard build environments
+#include "CoreUObject.h"
+#include "Engine.h"
+
 #include "UObject/UObjectIterator.h"
 #include "UObject/Class.h"
 #include "UObject/UnrealType.h"
-#include "JsonObjectConverter.h"
-#include "HAL/PlatformFilemanager.h"
+#include "Serialization/JsonSerializer.h"
+#include "HAL/PlatformFileManager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
+#if WITH_EDITOR
 // Helper function to get a string representation of a property's type
 FString GetPropertyType(FProperty* Property)
 {
@@ -115,3 +121,4 @@ bool UBPE_ExtractorFunctionLibrary::ExportBlueprintFunctionData(FString FilePath
 
     return FFileHelper::SaveStringToFile(OutputString, *FinalFilePath);
 }
+#endif // WITH_EDITOR
