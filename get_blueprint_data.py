@@ -59,26 +59,38 @@ def get_blueprint_callable_functions():
             # Some attributes might raise exceptions when accessed.
             continue
 
+    unreal.log(f"[DEBUG] Found {len(all_classes)} potential classes in the 'unreal' module.")
+    if len(all_classes) == 0:
+        unreal.log("[DEBUG] No classes were found. This is likely the reason for the empty output. The script cannot proceed.")
+        return
+
+    total_functions_printed = 0
     for cls in all_classes:
+        unreal.log(f"[DEBUG] Processing class: {cls.get_name()}")
+
         # We only care about classes that can have callable functions.
         if not cls.has_any_class_flags(unreal.ClassFlags.FUNCTION):
+            unreal.log(f"[DEBUG]  -> Skipping {cls.get_name()} because it has no FUNCTION flag.")
             continue
 
         # Filter out classes that are not relevant to typical Blueprint usage
         # This is an optional step to reduce noise.
         path_name = cls.get_path_name()
         if "/Script/Editor" in path_name or "/Script/AlembicImporter" in path_name:
+            unreal.log(f"[DEBUG]  -> Skipping {cls.get_name()} because it's an editor/importer class.")
             continue
 
         try:
             functions = cls.get_functions()
-        except Exception:
-            # Some classes might not support get_functions()
+            unreal.log(f"[DEBUG]  -> Found {len(functions)} functions in {cls.get_name()}.")
+        except Exception as e:
+            unreal.log(f"[DEBUG]  -> Could not get functions for {cls.get_name()}: {e}")
             continue
 
         for func in functions:
             # Check if the function is callable from Blueprints
             if func.has_any_function_flags(unreal.FunctionFlags.BLUEPRINT_CALLABLE):
+                total_functions_printed += 1
 
                 # --- Basic Info ---
                 class_name = cls.get_name()
