@@ -45,9 +45,10 @@ def get_blueprint_callable_functions():
     """
     unreal.log("Starting scan for Blueprint-callable functions...")
 
-    # Using unreal.get_all_loaded_objects() is very slow.
-    # A more targeted approach is to get all UClass objects directly.
-    all_classes = unreal.get_all_child_classes(unreal.Object)
+    # Get all loaded objects and filter for classes.
+    # This is a robust way to get all UClass instances, even if it's a bit slow.
+    all_objects = unreal.get_all_loaded_objects()
+    all_classes = [obj for obj in all_objects if isinstance(obj, unreal.Class)]
 
     for cls in all_classes:
         # We only care about classes that can have callable functions.
