@@ -45,10 +45,19 @@ def get_blueprint_callable_functions():
     """
     unreal.log("Starting scan for Blueprint-callable functions...")
 
-    # Get all loaded objects and filter for classes.
-    # This is a robust way to get all UClass instances, even if it's a bit slow.
-    all_objects = unreal.get_all_loaded_objects()
-    all_classes = [obj for obj in all_objects if isinstance(obj, unreal.Class)]
+    # Third attempt. The user's environment is missing core API functions.
+    # This approach iterates through the top-level 'unreal' module to find
+    # any exposed UClass objects. It might not be complete, but it's very robust.
+    unreal.log("Attempting to find classes by scanning the 'unreal' module...")
+    all_classes = []
+    for name in dir(unreal):
+        try:
+            obj = getattr(unreal, name)
+            if isinstance(obj, unreal.Class):
+                all_classes.append(obj)
+        except Exception:
+            # Some attributes might raise exceptions when accessed.
+            continue
 
     for cls in all_classes:
         # We only care about classes that can have callable functions.
