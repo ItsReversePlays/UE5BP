@@ -10,17 +10,17 @@ public class BlueprintDataExtractor : ModuleRules
             new string[]
             {
                 "Core",
+                "CoreUObject",
+                "Engine",
+                "Json",
+                "JsonUtilities"
             }
         );
 
         PrivateDependencyModuleNames.AddRange(
             new string[]
             {
-                "CoreUObject",
-                "Engine",
                 "Projects", // Needed for accessing project paths
-                "Json",     // For serializing data to JSON
-                "JsonUtilities"
             }
         );
     }

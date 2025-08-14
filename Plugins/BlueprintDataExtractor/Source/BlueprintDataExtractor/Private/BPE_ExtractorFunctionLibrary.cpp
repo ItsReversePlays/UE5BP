@@ -55,7 +55,7 @@ bool UBPE_ExtractorFunctionLibrary::ExportBlueprintFunctionData(FString FilePath
     }
 
     TSharedPtr<FJsonObject> RootObject = MakeShareable(new FJsonObject());
-    TSharedPtr<FJsonValueArray> AllFunctionsArray = MakeShareable(new FJsonValueArray());
+    TArray<TSharedPtr<FJsonValue>> AllFunctionsArray;
 
     // Iterate over all loaded UClasses
     for (TObjectIterator<UClass> It; It; ++It)
@@ -76,7 +76,7 @@ bool UBPE_ExtractorFunctionLibrary::ExportBlueprintFunctionData(FString FilePath
                 FunctionObject->SetStringField(TEXT("Category"), Function->GetMetaData(TEXT("Category")));
                 FunctionObject->SetBoolField(TEXT("IsPure"), Function->HasAnyFunctionFlags(EFunctionFlags::BlueprintPure));
 
-                TSharedPtr<FJsonValueArray> ParamsArray = MakeShareable(new FJsonValueArray());
+                TArray<TSharedPtr<FJsonValue>> ParamsArray;
 
                 // Iterate over all properties (parameters) of the function
                 for (TFieldIterator<FProperty> PropIt(Function); PropIt; ++PropIt)
@@ -98,16 +98,16 @@ bool UBPE_ExtractorFunctionLibrary::ExportBlueprintFunctionData(FString FilePath
                     ParamObject->SetStringField(TEXT("Type"), GetPropertyType(Property));
                     ParamObject->SetStringField(TEXT("Direction"), Direction);
 
-                    ParamsArray->Add(MakeShareable(new FJsonValueObject(ParamObject)));
+                    ParamsArray.Add(MakeShareable(new FJsonValueObject(ParamObject)));
                 }
 
-                FunctionObject->SetArrayField(TEXT("Parameters"), *ParamsArray);
-                AllFunctionsArray->Add(MakeShareable(new FJsonValueObject(FunctionObject)));
+                FunctionObject->SetArrayField(TEXT("Parameters"), ParamsArray);
+                AllFunctionsArray.Add(MakeShareable(new FJsonValueObject(FunctionObject)));
             }
         }
     }
 
-    RootObject->SetArrayField(TEXT("BlueprintCallableFunctions"), *AllFunctionsArray);
+    RootObject->SetArrayField(TEXT("BlueprintCallableFunctions"), AllFunctionsArray);
 
     FString OutputString;
     TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
